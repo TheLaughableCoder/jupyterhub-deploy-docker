@@ -1,12 +1,19 @@
-# Copyright (c) Jupyter Development Team.
-# Distributed under the terms of the Modified BSD License.
-ARG JUPYTERHUB_VERSION
+ARG JUPYTERHUB_VERSION=latest
 FROM quay.io/jupyterhub/jupyterhub:$JUPYTERHUB_VERSION
 
-# Install dockerspawner, nativeauthenticator
-# hadolint ignore=DL3013
+# Install dockerspawner and nativeauthenticator
 RUN python3 -m pip install --no-cache-dir \
     dockerspawner \
     jupyterhub-nativeauthenticator
 
+# Copy configuration file during build instead of mounting
+COPY jupyterhub_config.py /srv/jupyterhub/jupyterhub_config.py
+
+# Set working directory
+WORKDIR /srv/jupyterhub
+
+# Expose the port JupyterHub will listen on
+EXPOSE 8000
+
+# Start JupyterHub with the copied config file
 CMD ["jupyterhub", "-f", "/srv/jupyterhub/jupyterhub_config.py"]
